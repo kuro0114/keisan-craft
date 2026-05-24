@@ -10,16 +10,10 @@
 <meta name="theme-color" content="#5fa83e">
 <meta name="format-detection" content="telephone=no">
 <title>もじ クラフト</title>
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5.0/dist/hanzi-writer.min.js"></script>
 <style>
-  * {
-    margin: 0; padding: 0; box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-  }
-  html, body {
-    height: 100%; width: 100%;
-    overflow: hidden;
-    overscroll-behavior: none;
-  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; width: 100%; overflow: hidden; overscroll-behavior: none; }
   body {
     font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", "Segoe UI", monospace;
     background: #87ceeb;
@@ -48,38 +42,21 @@
   }
 
   /* === はいけい === */
-  .bg {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 1;
-    pointer-events: none;
-  }
-  .bg-sky {
-    background: linear-gradient(180deg, #6cbcf0 0%, #a4dcf7 70%, #c8edff 100%);
-  }
+  .bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1; pointer-events: none; }
+  .bg-sky { background: linear-gradient(180deg, #6cbcf0 0%, #a4dcf7 70%, #c8edff 100%); }
   .bg-sky::after {
     content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 100px;
-    background:
-      linear-gradient(180deg, transparent 0, transparent 14px, #6b421f 14px, #6b421f 100%);
+    background: linear-gradient(180deg, transparent 0, transparent 14px, #6b421f 14px, #6b421f 100%);
   }
   .bg-sky::before {
     content: ""; position: absolute; left: 0; right: 0; bottom: 86px; height: 14px;
-    background: repeating-linear-gradient(90deg,
-      #5fa83e 0 8px, #6cb845 8px 16px, #4f8e30 16px 24px, #6cb845 24px 32px);
+    background: repeating-linear-gradient(90deg, #5fa83e 0 8px, #6cb845 8px 16px, #4f8e30 16px 24px, #6cb845 24px 32px);
     z-index: 1;
   }
-  .bg-grass {
-    background: linear-gradient(180deg, #87ceeb 0%, #87ceeb 55%, #5fa83e 55%, #5fa83e 70%, #6b421f 70%, #6b421f 100%);
-  }
-  .bg-river {
-    background: linear-gradient(180deg, #87ceeb 0%, #b0e0f5 45%, #4a9fd6 55%, #2e7ab8 100%);
-  }
-  .bg-city {
-    background: linear-gradient(180deg, #ffa45c 0%, #ff7c3a 55%, #555 60%, #444 100%);
-  }
-  .bg-sea {
-    background: linear-gradient(180deg, #1a4d7a 0%, #0a2d4a 100%);
-  }
+  .bg-grass { background: linear-gradient(180deg, #87ceeb 0%, #87ceeb 55%, #5fa83e 55%, #5fa83e 70%, #6b421f 70%, #6b421f 100%); }
+  .bg-river { background: linear-gradient(180deg, #87ceeb 0%, #b0e0f5 45%, #4a9fd6 55%, #2e7ab8 100%); }
+  .bg-city  { background: linear-gradient(180deg, #ffa45c 0%, #ff7c3a 55%, #555 60%, #444 100%); }
+  .bg-sea   { background: linear-gradient(180deg, #1a4d7a 0%, #0a2d4a 100%); }
 
   /* === タイトル === */
   .title {
@@ -87,90 +64,48 @@
     color: #ffeb3b;
     font-weight: 900;
     text-shadow:
-      3px 0 0 #2a2a2a, -3px 0 0 #2a2a2a,
-      0 3px 0 #2a2a2a, 0 -3px 0 #2a2a2a,
-      3px 3px 0 #2a2a2a, -3px -3px 0 #2a2a2a,
-      3px -3px 0 #2a2a2a, -3px 3px 0 #2a2a2a,
+      3px 0 0 #2a2a2a, -3px 0 0 #2a2a2a, 0 3px 0 #2a2a2a, 0 -3px 0 #2a2a2a,
+      3px 3px 0 #2a2a2a, -3px -3px 0 #2a2a2a, 3px -3px 0 #2a2a2a, -3px 3px 0 #2a2a2a,
       5px 5px 0 #555;
     margin: 20px 0 8px;
     letter-spacing: 2px;
   }
-  .subtitle {
-    color: #fff;
-    text-shadow: 2px 2px 0 #333;
-    font-size: 16px;
-    margin-bottom: 20px;
-  }
+  .subtitle { color: #fff; text-shadow: 2px 2px 0 #333; font-size: 16px; margin-bottom: 20px; }
 
   /* === セーブスロット === */
-  .slots {
-    display: flex; gap: 10px;
-    margin: 0 auto 18px;
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 600px;
-  }
+  .slots { display: flex; gap: 10px; margin: 0 auto 18px; flex-wrap: wrap; justify-content: center; max-width: 600px; }
   .slot {
     position: relative;
-    background: rgba(0,0,0,0.55);
-    border: 3px solid #2a2a2a;
-    box-shadow: 3px 3px 0 #2a2a2a;
-    padding: 8px 14px;
-    color: #fff;
-    text-shadow: 2px 2px 0 #000;
-    min-width: 130px;
-    cursor: pointer;
+    background: rgba(0,0,0,0.55); border: 3px solid #2a2a2a; box-shadow: 3px 3px 0 #2a2a2a;
+    padding: 8px 14px; color: #fff; text-shadow: 2px 2px 0 #000;
+    min-width: 130px; cursor: pointer;
   }
-  .slot.active {
-    background: rgba(255,235,59,0.25);
-    border-color: #ffeb3b;
-    box-shadow: 3px 3px 0 #ffeb3b;
-  }
+  .slot.active { background: rgba(255,235,59,0.25); border-color: #ffeb3b; box-shadow: 3px 3px 0 #ffeb3b; }
   .slot-name { font-size: 13px; color: #ffeb3b; }
   .slot-icons { font-size: 20px; min-height: 26px; letter-spacing: 2px; }
   .slot-empty { font-size: 13px; color: #ccc; min-height: 26px; padding-top: 5px; }
   .slot .del {
-    position: absolute;
-    top: -10px; right: -10px;
+    position: absolute; top: -10px; right: -10px;
     width: 28px; height: 28px;
-    background: #d44;
-    border: 2px solid #2a2a2a;
-    color: #fff;
-    font-size: 16px;
-    line-height: 22px;
+    background: #d44; border: 2px solid #2a2a2a;
+    color: #fff; font-size: 16px; line-height: 22px;
     box-shadow: 2px 2px 0 #2a2a2a;
-    display: none;
-    font-weight: bold;
+    display: none; font-weight: bold;
   }
   .slot.has-data .del { display: block; }
   .slot .del:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 #2a2a2a; }
 
   /* === ステージカード === */
-  .stages {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    max-width: 600px;
-    margin: 0 auto 18px;
-  }
+  .stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 600px; margin: 0 auto 18px; }
   @media (max-width: 520px) { .stages { grid-template-columns: repeat(2, 1fr); } }
-  .stage {
-    height: 160px;
-    border: 4px solid #2a2a2a;
-    box-shadow: 4px 4px 0 #2a2a2a;
-    position: relative;
-    cursor: pointer;
-    overflow: hidden;
-  }
+  .stage { height: 160px; border: 4px solid #2a2a2a; box-shadow: 4px 4px 0 #2a2a2a; position: relative; cursor: pointer; overflow: hidden; }
   .stage:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #2a2a2a; }
   .stage .name {
     position: absolute; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.65);
-    padding: 6px 4px;
-    font-size: 16px;
-    text-shadow: 2px 2px 0 #000;
+    padding: 6px 4px; font-size: 16px; text-shadow: 2px 2px 0 #000;
   }
-  .stage .name .sub { display: block; font-size: 12px; color: #ffeb3b; }
+  .stage .name .sub { display: block; font-size: 11px; color: #ffeb3b; }
   .stage .got { position: absolute; top: 4px; right: 6px; font-size: 26px; filter: drop-shadow(2px 2px 0 #000); }
   .stage.s-grass { background: linear-gradient(180deg, #87ceeb 0%, #87ceeb 55%, #5fa83e 55%, #6cb845 70%, #6b421f 70%, #6b421f 100%); }
   .stage.s-river { background: linear-gradient(180deg, #87ceeb 0%, #b0e0f5 45%, #4a9fd6 55%, #2e7ab8 100%); }
@@ -185,53 +120,95 @@
   }
 
   /* === おたから バー === */
-  .treasures {
-    background: rgba(0,0,0,0.55);
-    border: 3px solid #2a2a2a;
-    padding: 10px 16px;
-    display: inline-flex;
-    gap: 14px;
-    align-items: center;
-    font-size: 14px;
-  }
+  .treasures { background: rgba(0,0,0,0.55); border: 3px solid #2a2a2a; padding: 10px 16px; display: inline-flex; gap: 14px; align-items: center; font-size: 14px; }
   .treasures .label { color: #ffeb3b; text-shadow: 2px 2px 0 #000; }
-  .treasures .t {
-    width: 36px; height: 36px;
-    background: #333; border: 2px solid #111;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; color: #666;
-  }
+  .treasures .t { width: 36px; height: 36px; background: #333; border: 2px solid #111; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #666; }
   .treasures .t.got { background: #222; box-shadow: inset 0 0 8px gold; color: #fff; }
 
   /* === プレイがめん === */
   .topbar {
     display: flex; justify-content: space-between; align-items: center;
-    background: rgba(0,0,0,0.6);
-    border: 3px solid #2a2a2a;
-    padding: 8px 14px;
-    margin: 10px auto 14px;
-    max-width: 500px;
+    background: rgba(0,0,0,0.6); border: 3px solid #2a2a2a;
+    padding: 8px 14px; margin: 10px auto 14px; max-width: 500px;
     font-size: 16px;
   }
   .topbar b { color: #ffeb3b; }
-  .stage-head {
-    font-size: 24px;
-    text-shadow: 2px 2px 0 #2a2a2a, -2px -2px 0 #2a2a2a, 2px -2px 0 #2a2a2a, -2px 2px 0 #2a2a2a;
-    margin: 10px 0 6px;
-  }
+  .stage-head { font-size: 24px; text-shadow: 2px 2px 0 #2a2a2a, -2px -2px 0 #2a2a2a, 2px -2px 0 #2a2a2a, -2px 2px 0 #2a2a2a; margin: 10px 0 6px; }
   .back-btn {
-    position: fixed;
-    top: 14px; left: 14px;
-    background: #888;
-    border: 3px solid #2a2a2a;
-    box-shadow: 3px 3px 0 #2a2a2a;
-    padding: 8px 14px;
-    color: #fff;
-    font-size: 14px;
-    text-shadow: 2px 2px 0 #000;
+    position: fixed; top: 14px; left: 14px;
+    background: #888; border: 3px solid #2a2a2a; box-shadow: 3px 3px 0 #2a2a2a;
+    padding: 8px 14px; color: #fff; font-size: 14px; text-shadow: 2px 2px 0 #000;
     z-index: 100;
   }
   .back-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #2a2a2a; }
+
+  /* === おてほん パネル === */
+  .otehon {
+    background: rgba(255,255,255,0.95);
+    color: #2a2a2a;
+    border: 4px solid #2a2a2a;
+    box-shadow: 4px 4px 0 #2a2a2a;
+    padding: 14px;
+    margin: 0 auto 12px;
+    max-width: 460px;
+  }
+  .otehon .label { font-size: 14px; color: #555; margin-bottom: 8px; }
+  .otehon .row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .big-char {
+    font-size: 80px;
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif;
+    line-height: 1;
+    color: #1a3a8a;
+    text-shadow: 3px 3px 0 #ccc;
+    min-width: 90px;
+    text-align: center;
+  }
+  .stroke-container {
+    width: 156px;
+    height: 156px;
+    border: 3px solid #2a2a2a;
+    background:
+      linear-gradient(to bottom, transparent calc(50% - 1px), #d0d0d0 calc(50% - 1px), #d0d0d0 calc(50% + 1px), transparent calc(50% + 1px)),
+      linear-gradient(to right, transparent calc(50% - 1px), #d0d0d0 calc(50% - 1px), #d0d0d0 calc(50% + 1px), transparent calc(50% + 1px)),
+      #fff;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    box-shadow: 3px 3px 0 #2a2a2a;
+    overflow: hidden;
+  }
+  .stroke-container::before {
+    content: ""; position: absolute; inset: 5px;
+    border: 1px dashed #d0d0d0;
+    pointer-events: none;
+  }
+  .stroke-fallback {
+    font-size: 120px;
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif;
+    color: rgba(150,150,150,0.7);
+    line-height: 1;
+  }
+  .otehon-buttons {
+    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  }
+  .ob {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 16px;
+    border: 3px solid #2a2a2a;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000;
+    box-shadow: 3px 3px 0 #2a2a2a;
+    font-weight: bold;
+    min-width: 120px;
+  }
+  .ob:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #2a2a2a; }
+  .ob.sound  { background: linear-gradient(180deg, #5b9bd5 0%, #5b9bd5 50%, #3a73a8 50%, #3a73a8 100%); }
+  .ob.stroke { background: linear-gradient(180deg, #f0a060 0%, #f0a060 50%, #b86020 50%, #b86020 100%); }
 
   /* === もじ かきとり === */
   .draw-box {
@@ -243,40 +220,23 @@
     margin: 0 auto 14px;
     max-width: 460px;
   }
-  .prompt {
-    font-size: 16px;
-    color: #555;
-    margin-bottom: 8px;
-  }
+  .prompt { font-size: 16px; color: #555; margin-bottom: 8px; }
   .canvas-wrap {
     position: relative;
-    width: 280px;
-    height: 280px;
+    width: 280px; height: 280px;
     margin: 0 auto;
     border: 3px solid #2a2a2a;
     background:
       linear-gradient(to bottom, transparent calc(50% - 1px), #d0d0d0 calc(50% - 1px), #d0d0d0 calc(50% + 1px), transparent calc(50% + 1px)),
       linear-gradient(to right, transparent calc(50% - 1px), #d0d0d0 calc(50% - 1px), #d0d0d0 calc(50% + 1px), transparent calc(50% + 1px)),
       #fff;
-    background-size: 100% 100%, 100% 100%, 100% 100%;
     overflow: hidden;
   }
-  @media (min-width: 520px) {
-    .canvas-wrap { width: 360px; height: 360px; }
-  }
-  .canvas-wrap::before {
-    content: "";
-    position: absolute;
-    inset: 6px;
-    border: 2px dashed #d0d0d0;
-    pointer-events: none;
-  }
+  @media (min-width: 520px) { .canvas-wrap { width: 360px; height: 360px; } }
+  .canvas-wrap::before { content: ""; position: absolute; inset: 6px; border: 2px dashed #d0d0d0; pointer-events: none; }
   .template {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
     font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif;
     font-size: 240px;
     color: rgba(180, 180, 180, 0.55);
@@ -287,42 +247,25 @@
   }
   @media (min-width: 520px) { .template { font-size: 300px; } }
   #drawCanvas {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
     z-index: 2;
     touch-action: none;
     cursor: crosshair;
   }
-  .draw-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    max-width: 460px;
-    margin: 0 auto;
-    flex-wrap: wrap;
-  }
+  .draw-actions { display: flex; gap: 10px; justify-content: center; max-width: 460px; margin: 0 auto; flex-wrap: wrap; }
   .db {
-    font-size: 20px;
-    color: #fff;
-    padding: 14px 24px;
+    font-size: 20px; color: #fff; padding: 14px 24px;
     border: 4px solid #2a2a2a;
     text-shadow: 2px 2px 0 #000;
     box-shadow: inset 3px 3px 0 rgba(255,255,255,0.2), inset -3px -3px 0 rgba(0,0,0,0.3), 3px 3px 0 #2a2a2a;
-    font-weight: bold;
-    min-width: 130px;
+    font-weight: bold; min-width: 130px;
   }
   .db:active { transform: translate(2px, 2px); box-shadow: inset 3px 3px 0 rgba(255,255,255,0.2), inset -3px -3px 0 rgba(0,0,0,0.3), 1px 1px 0 #2a2a2a; }
   .db.erase { background: linear-gradient(180deg, #999 0%, #999 50%, #666 50%, #666 100%); }
   .db.done  { background: linear-gradient(180deg, #6cc73a 0%, #6cc73a 50%, #4a9c20 50%, #4a9c20 100%); }
 
-  .message {
-    font-size: 18px;
-    height: 28px;
-    text-shadow: 2px 2px 0 #000;
-    margin-bottom: 10px;
-  }
+  .message { font-size: 18px; height: 28px; text-shadow: 2px 2px 0 #000; margin-bottom: 10px; }
   .message.ok { color: #6cff6c; }
   .message.ng { color: #ffd166; }
 
@@ -335,82 +278,43 @@
     box-shadow: 6px 6px 0 #2a2a2a, inset 0 0 20px rgba(255,235,59,0.2);
     padding: 24px 20px;
   }
-  .r-title {
-    font-size: 36px;
-    color: #ffeb3b;
-    text-shadow: 2px 2px 0 #2a2a2a, -2px -2px 0 #2a2a2a, 2px -2px 0 #2a2a2a, -2px 2px 0 #2a2a2a;
-    margin-bottom: 14px;
-  }
+  .r-title { font-size: 36px; color: #ffeb3b; text-shadow: 2px 2px 0 #2a2a2a, -2px -2px 0 #2a2a2a, 2px -2px 0 #2a2a2a, -2px 2px 0 #2a2a2a; margin-bottom: 14px; }
   .r-stars { font-size: 38px; min-height: 48px; margin-bottom: 10px; }
   .r-score { font-size: 18px; margin-bottom: 12px; }
-  .r-treasure {
-    margin: 14px 0;
-    padding: 14px;
-    background: rgba(255,235,59,0.15);
-    border: 2px dashed #ffeb3b;
-    display: none;
-  }
+  .r-treasure { margin: 14px 0; padding: 14px; background: rgba(255,235,59,0.15); border: 2px dashed #ffeb3b; display: none; }
   .r-treasure.show { display: block; animation: tin 0.7s; }
   .r-treasure .icon { font-size: 56px; display: block; filter: drop-shadow(3px 3px 0 #000); }
   .r-treasure .name { font-size: 18px; margin-top: 4px; }
   @keyframes tin { 0% { transform: scale(0); } 70% { transform: scale(1.25); } 100% { transform: scale(1); } }
   .r-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
   .pbtn {
-    font-size: 16px;
-    padding: 10px 18px;
-    border: 3px solid #2a2a2a;
+    font-size: 16px; padding: 10px 18px; border: 3px solid #2a2a2a;
     background: linear-gradient(180deg, #5b9bd5 0%, #5b9bd5 50%, #3a73a8 50%, #3a73a8 100%);
-    color: #fff;
-    box-shadow: 3px 3px 0 #2a2a2a;
-    text-shadow: 2px 2px 0 #000;
+    color: #fff; box-shadow: 3px 3px 0 #2a2a2a; text-shadow: 2px 2px 0 #000;
   }
   .pbtn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #2a2a2a; }
   .pbtn.gold { background: linear-gradient(180deg, #ffd700 0%, #ffd700 50%, #b8860b 50%, #b8860b 100%); color: #2a2a2a; text-shadow: 1px 1px 0 #fff; }
 
   /* === モーダル === */
-  .modal {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.7);
-    display: none;
-    align-items: center; justify-content: center;
-    z-index: 1000;
-    padding: 20px;
-  }
+  .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
   .modal.show { display: flex; }
-  .modal-box {
-    background: #c9b18a;
-    border: 4px solid #2a2a2a;
-    box-shadow: 6px 6px 0 #2a2a2a;
-    padding: 20px;
-    text-align: center;
-    color: #2a2a2a;
-    max-width: 360px;
-    width: 100%;
-  }
+  .modal-box { background: #c9b18a; border: 4px solid #2a2a2a; box-shadow: 6px 6px 0 #2a2a2a; padding: 20px; text-align: center; color: #2a2a2a; max-width: 360px; width: 100%; }
   .m-title { font-size: 22px; color: #c00; margin-bottom: 10px; text-shadow: 2px 2px 0 #fff; }
   .m-text { font-size: 14px; line-height: 1.5; margin-bottom: 18px; }
   .m-text b { background: #2a2a2a; color: #ffeb3b; padding: 2px 6px; }
   .m-text .warn { color: #c00; font-weight: bold; }
   .m-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  .mbtn {
-    font-size: 16px;
-    padding: 10px 18px;
-    border: 3px solid #2a2a2a;
-    color: #fff;
-    box-shadow: 3px 3px 0 #2a2a2a;
-    text-shadow: 2px 2px 0 #000;
-  }
+  .mbtn { font-size: 16px; padding: 10px 18px; border: 3px solid #2a2a2a; color: #fff; box-shadow: 3px 3px 0 #2a2a2a; text-shadow: 2px 2px 0 #000; }
   .mbtn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #2a2a2a; }
   .mbtn.safe { background: linear-gradient(180deg, #5fa83e 0%, #5fa83e 50%, #3a7028 50%, #3a7028 100%); }
   .mbtn.danger { background: linear-gradient(180deg, #d44 0%, #d44 50%, #922 50%, #922 100%); }
 
   .particles { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 1500; overflow: hidden; }
   .p { position: absolute; font-size: 26px; animation: fall linear forwards; }
-  @keyframes fall {
-    0% { transform: translateY(-30px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(105vh) rotate(720deg); opacity: 0.5; }
-  }
+  @keyframes fall { 0% { transform: translateY(-30px) rotate(0deg); opacity: 1; } 100% { transform: translateY(105vh) rotate(720deg); opacity: 0.5; } }
+
+  /* hanzi-writer SVG style */
+  .stroke-container svg { width: 100%; height: 100%; }
 </style>
 </head>
 <body>
@@ -419,9 +323,7 @@
   ⚠ ゲームを あそぶには <u>Safari で ひらいて</u> ください。
 </div>
 <noscript>
-  <div style="position:fixed;top:0;left:0;right:0;background:#d44;color:#fff;padding:20px;text-align:center;z-index:9999;font-weight:bold;">
-    JavaScript が ゆうこうに なっていません。
-  </div>
+  <div style="position:fixed;top:0;left:0;right:0;background:#d44;color:#fff;padding:20px;text-align:center;z-index:9999;font-weight:bold;">JavaScript が ゆうこうに なっていません。</div>
 </noscript>
 
 <!-- ====== タイトル ====== -->
@@ -429,7 +331,7 @@
   <div class="bg bg-sky"></div>
   <div class="container">
     <h1 class="title">もじ クラフト</h1>
-    <p class="subtitle">なぞって もじを かいてみよう！</p>
+    <p class="subtitle">かきじゅん を みて おとを ききながら かいてみよう！</p>
     <div class="slots" id="saveSlots"></div>
     <div class="stages" id="stageGrid"></div>
     <div><div class="treasures" id="treasureBar"></div></div>
@@ -446,13 +348,29 @@
       <div>もじ <b id="count">1</b> / 10</div>
       <div>てんすう <b id="score">0</b></div>
     </div>
+
+    <div class="otehon">
+      <div class="label">おてほん</div>
+      <div class="row">
+        <div class="big-char" id="bigChar">あ</div>
+        <div class="stroke-container" id="strokeContainer">
+          <div class="stroke-fallback">あ</div>
+        </div>
+      </div>
+      <div class="otehon-buttons">
+        <button class="ob sound" type="button" id="speakBtn">🔊 よみかた</button>
+        <button class="ob stroke" type="button" id="strokeBtn">✏️ かきじゅん</button>
+      </div>
+    </div>
+
     <div class="draw-box">
-      <div class="prompt">おてほんを なぞって かいてね</div>
+      <div class="prompt">なぞって じぶんで かいてみよう</div>
       <div class="canvas-wrap">
         <div class="template" id="template">あ</div>
         <canvas id="drawCanvas" width="600" height="600"></canvas>
       </div>
     </div>
+
     <div class="message" id="message">ゆびや タッチペンで かいてね</div>
     <div class="draw-actions">
       <button class="db erase" id="eraseBtn">けす</button>
@@ -528,7 +446,7 @@
   var ORDER = ['grass','river','city','sea'];
 
   // ====== セーブ ======
-  var SAVE_KEY = 'moji_craft_v2';
+  var SAVE_KEY = 'moji_craft_v3';
   function safeGet(k) { try { return localStorage.getItem(k); } catch(e) { return null; } }
   function safeSet(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
   function loadAll() {
@@ -546,7 +464,6 @@
   }
   function saveAll() { safeSet(SAVE_KEY, JSON.stringify(allData)); }
   var allData = loadAll();
-
   function curSlot() {
     if (!allData.slots[allData.active]) allData.slots[allData.active] = {};
     return allData.slots[allData.active];
@@ -575,12 +492,7 @@
   function rand(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
 
   // ====== タイトル ======
-  function renderTitle() {
-    renderSaveSlots();
-    renderStages();
-    renderTreasureBar();
-  }
-
+  function renderTitle() { renderSaveSlots(); renderStages(); renderTreasureBar(); }
   function renderSaveSlots() {
     var box = $('saveSlots');
     box.innerHTML = '';
@@ -600,9 +512,7 @@
       div.className = 'slot' + (isActive ? ' active' : '') + (isEmpty ? '' : ' has-data');
       div.innerHTML =
         '<div class="slot-name">スロット ' + (i + 1) + '</div>' +
-        (isEmpty
-          ? '<div class="slot-empty">からっぽ</div>'
-          : '<div class="slot-icons">' + icons + '</div>') +
+        (isEmpty ? '<div class="slot-empty">からっぽ</div>' : '<div class="slot-icons">' + icons + '</div>') +
         '<button class="del" type="button">×</button>';
       (function(idx, el) {
         el.addEventListener('click', function(e) {
@@ -617,7 +527,6 @@
       box.appendChild(div);
     }
   }
-
   function renderStages() {
     var grid = $('stageGrid');
     grid.innerHTML = '';
@@ -638,7 +547,6 @@
       })(list[i]);
     }
   }
-
   function renderTreasureBar() {
     var box = $('treasureBar');
     var data = curSlot();
@@ -650,14 +558,12 @@
     }
     box.innerHTML = html;
   }
-
   function switchSlot(i) {
     if (allData.active === i) return;
     allData.active = i;
     saveAll();
     renderTitle();
   }
-
   function askDelete(i) {
     var s = allData.slots[i];
     var count = 0;
@@ -665,14 +571,9 @@
     showModal({
       title: 'ほんとうに けす？',
       text: '<b>スロット ' + (i + 1) + '</b> の セーブデータを<br>けしますか？<br>おたから ' + count + ' こ<br><span class="warn">けすと もどせません！</span>',
-      onOk: function() {
-        allData.slots[i] = null;
-        saveAll();
-        renderTitle();
-      }
+      onOk: function() { allData.slots[i] = null; saveAll(); renderTitle(); }
     });
   }
-
   function showModal(opt) {
     $('mTitle').textContent = opt.title || 'ちゅうい！';
     $('mText').innerHTML = opt.text || '';
@@ -682,11 +583,98 @@
   }
   function hideModal() { $('modal').classList.remove('show'); }
 
+  // ====== おんせい よみあげ ======
+  var jaVoice = null;
+  function pickJaVoice() {
+    if (!('speechSynthesis' in window)) return;
+    var voices = speechSynthesis.getVoices();
+    // にほんごの こえを えらぶ（できれば おとめなど やわらかいもの）
+    var preferred = null;
+    for (var i = 0; i < voices.length; i++) {
+      var v = voices[i];
+      if (v.lang && v.lang.indexOf('ja') === 0) {
+        // O-ren, Kyoko など Apple の こえを ゆうせん
+        if (!preferred) preferred = v;
+        if (v.name && (v.name.indexOf('Kyoko') >= 0 || v.name.indexOf('O-ren') >= 0)) {
+          preferred = v;
+          break;
+        }
+      }
+    }
+    jaVoice = preferred;
+  }
+  if ('speechSynthesis' in window) {
+    pickJaVoice();
+    try {
+      speechSynthesis.onvoiceschanged = pickJaVoice;
+    } catch(e) {}
+  }
+
+  function speak(text) {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ja-JP';
+      u.rate = 0.7;
+      u.pitch = 1.15;
+      u.volume = 1.0;
+      if (jaVoice) u.voice = jaVoice;
+      speechSynthesis.speak(u);
+    } catch(e) {}
+  }
+
+  // ====== かきじゅん（hanzi-writer）======
+  var currentWriter = null;
+  function showStrokeOrder(ch) {
+    var container = $('strokeContainer');
+    container.innerHTML = '';
+    currentWriter = null;
+
+    if (typeof HanziWriter === 'undefined') {
+      container.innerHTML = '<div class="stroke-fallback">' + ch + '</div>';
+      return;
+    }
+
+    try {
+      currentWriter = HanziWriter.create(container, ch, {
+        width: 156,
+        height: 156,
+        padding: 6,
+        strokeAnimationSpeed: 1.0,
+        delayBetweenStrokes: 350,
+        showOutline: true,
+        showCharacter: false,
+        strokeColor: '#1a3a8a',
+        outlineColor: '#bbb',
+        radicalColor: null,
+        onLoadCharDataError: function() {
+          container.innerHTML = '<div class="stroke-fallback">' + ch + '</div>';
+          currentWriter = null;
+        },
+        onLoadCharDataSuccess: function() {
+          try { currentWriter.animateCharacter(); } catch(e) {}
+        }
+      });
+    } catch(e) {
+      container.innerHTML = '<div class="stroke-fallback">' + ch + '</div>';
+      currentWriter = null;
+    }
+  }
+  function replayStrokeOrder() {
+    if (currentWriter) {
+      try {
+        currentWriter.animateCharacter();
+        return;
+      } catch(e) {}
+    }
+    showStrokeOrder(currentChar);
+  }
+
   // ====== ステージ かいし ======
   function startStage(id) {
     currentStage = STAGES[id];
     qCount = 0; score = 0; doneCount = 0; locked = false;
-    // ステージようの 10もじを えらぶ（しゃっふる してじゅんばんに）
     var pool = currentStage.pool.slice();
     pool.sort(function(){ return Math.random() - 0.5; });
     stageChars = pool.slice(0, 10);
@@ -701,8 +689,11 @@
     if (qCount > 10) { showResult(); return; }
     $('count').textContent = qCount;
     currentChar = stageChars[qCount - 1];
+    $('bigChar').textContent = currentChar;
     $('template').textContent = currentChar;
-    $('message').textContent = 'ゆびや タッチペンで かいてね';
+    showStrokeOrder(currentChar);
+    speak(currentChar);
+    $('message').textContent = 'おとを きいて なぞって かいてね';
     $('message').className = 'message';
     clearCanvas();
     locked = false;
@@ -729,7 +720,6 @@
       y: (e.clientY - rect.top) * (canvas.height / rect.height)
     };
   }
-
   function startDraw(e) {
     if (locked) return;
     e.preventDefault();
@@ -740,9 +730,7 @@
     ctx.arc(p.x, p.y, ctx.lineWidth / 2, 0, Math.PI * 2);
     ctx.fillStyle = ctx.strokeStyle;
     ctx.fill();
-    if (canvas.setPointerCapture) {
-      try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
-    }
+    if (canvas.setPointerCapture) { try { canvas.setPointerCapture(e.pointerId); } catch(err) {} }
   }
   function moveDraw(e) {
     if (!drawing) return;
@@ -758,28 +746,20 @@
     if (!drawing) return;
     drawing = false;
   }
-
   canvas.addEventListener('pointerdown', startDraw);
   canvas.addEventListener('pointermove', moveDraw);
   canvas.addEventListener('pointerup', endDraw);
   canvas.addEventListener('pointercancel', endDraw);
   canvas.addEventListener('pointerleave', endDraw);
 
-  function clearCanvas() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
-
+  function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
   function countDrawnPixels() {
     try {
       var data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
       var count = 0;
-      for (var i = 3; i < data.length; i += 4) {
-        if (data[i] > 50) count++;
-      }
+      for (var i = 3; i < data.length; i += 4) if (data[i] > 50) count++;
       return count;
-    } catch(e) {
-      return 99999;
-    }
+    } catch(e) { return 99999; }
   }
 
   // ====== ボタン ======
@@ -793,7 +773,6 @@
   $('doneBtn').addEventListener('click', function(){
     if (locked) return;
     var drawn = countDrawnPixels();
-    // しきい値（くろい てんが すくなすぎる ばあいは もどす）
     if (drawn < 800) {
       $('message').textContent = 'もうすこし かいてみよう';
       $('message').className = 'message ng';
@@ -810,6 +789,9 @@
     beep(880, 0.1);
     setTimeout(nextProblem, 900);
   });
+
+  $('speakBtn').addEventListener('click', function(){ speak(currentChar); });
+  $('strokeBtn').addEventListener('click', replayStrokeOrder);
 
   // ====== けっか ======
   function showResult() {
@@ -861,7 +843,7 @@
     }
   }
 
-  // ====== おと ======
+  // ====== おと（こうかおん）======
   var audioCtx = null;
   function beep(freq, dur) {
     try {
@@ -878,26 +860,18 @@
     } catch(e) {}
   }
 
-  // ====== ボタン その2 ======
   $('backBtn').addEventListener('click', function(){ renderTitle(); show('titleScreen'); });
   $('toTitleBtn').addEventListener('click', function(){ renderTitle(); show('titleScreen'); });
   $('retryBtn').addEventListener('click', function(){ if (currentStage) startStage(currentStage.id); });
 
-  // ====== スタート ======
   var warn = $('jsWarn');
   if (warn) warn.style.display = 'none';
-
-  window.addEventListener('error', function(e){
-    console.error('[もじクラフト]', e.error || e.message);
-  });
-  try {
-    renderTitle();
-  } catch(err) {
+  window.addEventListener('error', function(e){ console.error('[もじクラフト]', e.error || e.message); });
+  try { renderTitle(); }
+  catch(err) {
     console.error('renderTitle:', err);
-    try {
-      allData = { active: 0, slots: [null, null, null] };
-      renderTitle();
-    } catch(err2) {}
+    try { allData = { active: 0, slots: [null, null, null] }; renderTitle(); }
+    catch(err2) {}
   }
 })();
 </script>
