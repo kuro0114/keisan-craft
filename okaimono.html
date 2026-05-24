@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="おかいものクラフト">
+<meta name="theme-color" content="#5fa83e">
+<meta name="format-detection" content="telephone=no">
+<title>おかいもの クラフト</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; width: 100%; overflow: hidden; overscroll-behavior: none; }
+  body {
+    font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", "Segoe UI", monospace;
+    background: #87ceeb;
+    color: #fff;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  button { font-family: inherit; cursor: pointer; touch-action: manipulation; border: none; }
+
+  .screen {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .screen.active { display: block; }
+  .container {
+    position: relative;
+    min-height: 100%;
+    padding: 20px 16px 40px;
+    text-align: center;
+    z-index: 2;
+  }
+
+  /* === はいけい === */
+  .bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1; pointer-events: none; }
+  .bg-sky { background: linear-gradient(180deg, #6cbcf0 0%, #a4dcf7 70%, #c8edff 100%); }
+  .bg-sky::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 100px;
+    background: linear-gradient(180deg, transparent 0, transparent 14px, #6b421f 14px, #6b421f 100%);
+  }
+  .bg-sky::before {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 86px; height: 14px;
+    background: repeating-linear-gradient(90deg, #5fa83e 0 8px, #6cb845 8px 16px, #4f8e30 16px 24px, #6cb845 24px 32px);
+    z-index: 1;
+  }
+  .bg-grass { background: linear-gradient(180deg, #87ceeb 0%, #87ceeb 55%, #5fa83e 55%, #5fa83e 70%, #6b421f 70%, #6b421f 100%); }
+  .bg-river { background: linear-gradient(180deg, #87ceeb 0%, #b0e0f5 45%, #4a9fd6 55%, #2e7ab8 100%); }
+  .bg-city  { background: linear-gradient(180deg, #ffa45c 0%, #ff7c3a 55%, #555 60%, #444 100%); }
+  .bg-sea   { background: linear-gradient(180deg, #1a4d7a 0%, #0a2d4a 100%); }
+
+  /* === タイトル === */
+  .title {
+    font-size: 38px;
+    color: #ffeb3b;
+    font-weight: 900;
+    text-shadow:
+      3px 0 0 #2a2a2a, -3px 0 0 #2a2a2a, 0 3px 0 #2a2a2a, 0 -3px 0 #2a2a2a,
+      3px 3px 0 #2a2a2a, -3px -3px 0 #2a2a2a, 3px -3px 0 #2a2a2a, -3px 3px 0 #2a2a2a,
+      5px 5px 0 #555;
+    margin: 20px 0 8px;
+    letter-spacing: 2px;
+  }
+  .subtitle { color: #fff; text-shadow: 2px 2px 0 #333; font-size: 16px; margin-bottom: 20px; }
+
+  /* === セーブスロット === */
+  .slots {
+    display: flex; gap: 10px;
+    margin: 0 auto 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 600px;
+  }
+  .slot {
+    position: relative;
+    background: rgba(0,0,0,0.55);
+    border: 3px solid #2a2a2a;
+    box-shadow: 3px 3px 0 #2a2a2a;
+    padding: 8px 14px;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000;
+    min-width: 130px;
+    cursor: pointer;
+  }
+  .slot.active { background: rgba(255,235,59,0.25); border-color: #ffeb3b; box-shadow: 3px 3px 0 #ffeb3b; }
+  .slot-name { font-size: 13px; color: #ffeb3b; }
+  .slot-icons { font-size: 20px; min-height: 26px; letter-spacing: 2px; }
+  .slot-empty { font-size: 13px; color: #ccc; min-height: 26px; padding-top: 5px; }
+  .slot .del {
+    position: absolute;
+    top: -10px; right: -10px;
+    width: 28px; height: 28px;
+    background: #d44; border: 2px solid #2a2a2a;
+    color: #fff; font-size: 16px; line-height: 22px;
+    box-shadow: 2px 2px 0 #2a2a2a;
+    display: none; font-weight: bold;
+  }
+  .slot.has-data .del { display: block; }
+  .slot .del:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 #2a2a2a; }
+
+  /* === ステージカード === */
+  .stages {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    max-width: 600px; margin: 0 auto 18px;
+  }
+  @media (max-width: 520px) { .stages { grid-template-columns: repeat(2, 1fr); } }
+  .stage {
+    height: 160px;
+    border: 4px solid #2a2a2a;
+    box-shadow: 4px 4px 0 #2a2a2a;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .stage:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #2a2a2a; }
+  .stage .name {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.65);
+    padding: 6px 4px;
+    font-size: 16px;
+    text-shadow: 2px 2px 0 #000;
+  }
+  .stage .name .sub { display: block; font-size: 11px; color: #ffeb3b; }
+  .stage .got { position: absolute; top: 4px; right: 6px; font-size: 26px; filter: drop-shadow(2px 2px 0 #000); }
+  .stage.s-grass { background: linear-gradient(180deg, #87ceeb 0%, #87ceeb 55%, #5fa83e 55%, #6cb845 70%, #6b421f 70%, #6b421f 100%); }
+  .stage.s-river { background: linear-gradient(180deg, #87ceeb 0%, #b0e0f5 45%, #4a9fd6 55%, #2e7ab8 100%); }
+  .stage.s-city  { background: linear-gradient(180deg, #ffa45c 0%, #ff7c3a 55%, #555 60%, #444 100%); }
+  .stage.s-sea {
+    background: linear-gradient(180deg, #1a4d7a 0%, #0a2d4a 100%);
+    animation: secretGlow 1.5s ease-in-out infinite;
+  }
+  @keyframes secretGlow {
+    0%,100% { box-shadow: 4px 4px 0 #2a2a2a, inset 0 0 15px #ffeb3b; }
+    50%     { box-shadow: 4px 4px 0 #2a2a2a, inset 0 0 30px gold, 0 0 20px #ffeb3b; }
+  }
+
+  /* === おたから バー === */
+  .treasures {
+    background: rgba(0,0,0,0.55);
+    border: 3px solid #2a2a2a;
+    padding: 10px 16px;
+    display: inline-flex; gap: 14px; align-items: center;
+    font-size: 14px;
+  }
+  .treasures .label { color: #ffeb3b; text-shadow: 2px 2px 0 #000; }
+  .treasures .t {
+    width: 36px; height: 36px;
+    background: #333; border: 2px solid #111;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: #666;
+  }
+  .treasures .t.got { background: #222; box-shadow: inset 0 0 8px gold; color: #fff; }
+
+  /* === プレイがめん === */
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(0,0,0,0.6);
+    border: 3px solid #2a2a2a;
+    padding: 8px 14px;
+    margin: 10px auto 14px;
+    max-width: 500px;
+    font-size: 16px;
+  }
+  .topbar b { color: #ffeb3b; }
+  .stage-head {
+    font-size: 22px;
+    text-shadow: 2px 2px 0 #2a2a2a, -2px -2px 0 #2a2a2a, 2px -2px 0 #2a2a2a, -2px 2px 0 #2a2a2a;
+    margin: 10px 0 6px;
+  }
+  .back-btn {
+    position: fixed; top: 14px; left: 14px;
+    background: #888;
+    border: 3px solid #2a2a2a;
+    box-shadow: 3px 3px 0 #2a2a2a;
+    padding: 8px 14px;
+    color: #fff; font-size: 14px; text-shadow: 2px 2px 0 #000;
+    z-index: 100;
+  }
+  .back-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #2a2a2a; }
+
+  /* === おみせ === */
+  .shop {
+    background: rgba(255,255,255,0.95);
+    color: #2a2a2a;
+    border: 4px solid #2a2a2a;
+    box-shadow: 4px 4px 0 #2a2a2a;
+    padding: 14px;
+    margin: 0 auto 12px;
+    max-width: 460px;
+  }
+  .item { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 8px; }
+  .item .pic { font-size: 56px; line-height: 1; }
+  .item .info { text-align: left; }
+  .item .name { font-size: 18px; color: #555; }
+  .item .price { font-size: 32px; color: #c00; font-weight: bold; }
+  .item .price small { font-size: 18px; color: #555; font-weight: normal; }
+  .task {
+    font-size: 16px;
+    background: #ffeb3b;
+    color: #2a2a2a;
+    padding: 6px 10px;
+    border: 2px solid #2a2a2a;
+    display: inline-block;
+    font-weight: bold;
+  }
+  .task b { color: #c00; }
+
+  /* === おさいふ === */
+  .wallet {
+    background: rgba(0,0,0,0.55);
+    border: 3px solid #2a2a2a;
+    box-shadow: 3px 3px 0 #2a2a2a;
+    padding: 10px;
+    margin: 0 auto 12px;
+    max-width: 460px;
+    color: #fff;
+  }
+  .wallet .head { font-size: 14px; color: #ffeb3b; text-shadow: 2px 2px 0 #000; margin-bottom: 6px; }
+  .paid-list {
+    min-height: 60px;
+    background: rgba(255,255,255,0.1);
+    border: 2px dashed rgba(255,255,255,0.3);
+    padding: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+  }
+  .paid-list:empty::after {
+    content: "（おかねを えらんでね）";
+    font-size: 13px;
+    color: #aaa;
+  }
+  .total {
+    font-size: 20px;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000;
+    margin-top: 8px;
+  }
+  .total b { color: #ffeb3b; font-size: 26px; }
+  .total .target { color: #aaa; font-size: 14px; }
+  .total .target b { color: #ffeb3b; font-size: 18px; }
+
+  /* === コイン・おさつ === */
+  .money-pad {
+    background: rgba(255,255,255,0.1);
+    border: 3px solid #2a2a2a;
+    padding: 10px;
+    margin: 0 auto 12px;
+    max-width: 460px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+  }
+  .coin {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    border: 3px solid #2a2a2a;
+    position: relative;
+    box-shadow: 3px 3px 0 #2a2a2a, inset 3px 3px 0 rgba(255,255,255,0.35), inset -3px -3px 0 rgba(0,0,0,0.25);
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+    line-height: 1;
+    padding: 0;
+  }
+  .coin:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #2a2a2a, inset 3px 3px 0 rgba(255,255,255,0.35), inset -3px -3px 0 rgba(0,0,0,0.25); }
+  .coin .v { font-size: 18px; font-weight: bold; }
+  .coin .e { font-size: 9px; }
+  .coin.c1   { background: radial-gradient(circle at 30% 30%, #e8e8e8, #aaa); color: #444; }
+  .coin.c5   { background: radial-gradient(circle at 30% 30%, #ecd078, #8b6c1a); color: #fff; }
+  .coin.c5::after, .coin.c50::after {
+    content: ""; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 18px; height: 18px; border-radius: 50%;
+    background: rgba(0,0,0,0.35);
+    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5);
+  }
+  .coin.c10  { background: radial-gradient(circle at 30% 30%, #d49a5e, #7a4a20); color: #fff; }
+  .coin.c50  { background: radial-gradient(circle at 30% 30%, #e0e0e0, #888); color: #444; }
+  .coin.c100 { background: radial-gradient(circle at 30% 30%, #d8d8d8, #777); color: #444; }
+  .coin.c500 { background: radial-gradient(circle at 30% 30%, #f0c060, #a0700a); color: #fff; }
+  .bill {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    width: 100px; height: 56px;
+    background: linear-gradient(180deg, #ede6cc 0%, #d6cda8 100%);
+    border: 3px solid #2a2a2a;
+    color: #2a4a3a;
+    box-shadow: 3px 3px 0 #2a2a2a, inset 2px 2px 0 rgba(255,255,255,0.4);
+    line-height: 1;
+    padding: 0;
+    position: relative;
+  }
+  .bill:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #2a2a2a, inset 2px 2px 0 rgba(255,255,255,0.4); }
+  .bill .v { font-size: 22px; font-weight: bold; }
+  .bill .e { font-size: 10px; }
+  .bill::before {
+    content: ""; position: absolute; inset: 4px;
+    border: 1px solid rgba(42,74,58,0.4);
+    pointer-events: none;
+  }
+
+  /* paid-list の こいんは ちいさめ */
+  .paid-list .coin { width: 44px; height: 44px; }
+  .paid-list .coin .v { font-size: 14px; }
+  .paid-list .coin .e { font-size: 7px; }
+  .paid-list .bill { width: 72px; height: 40px; }
+  .paid-list .bill .v { font-size: 16px; }
+  .paid-list .bill .e { font-size: 8px; }
+
+  /* === メッセージ === */
+  .message { font-size: 18px; height: 28px; text-shadow: 2px 2px 0 #000; margin-bottom: 10px; }
+  .message.ok { color: #6cff6c; }
+  .message.ng { color: #ffd166; }
+
+  /* === アクションボタン === */
+  .actions { display: flex; gap: 10px; justify-content: center; max-width: 460px; margin: 0 auto; flex-wrap: wrap; }
+  .db {
+    font-size: 20px;
+    color: #fff;
+    padding: 12px 22px;
+    border: 4px solid #2a2a2a;
+    text-shadow: 2px 2px 0 #000;
+    box-shadow: inset 3px 3px 0 rgba(255,255,255,0.2), inset -3px -3px 0 rgba(0,0,0,0.3), 3px 3px 0 #2a2a2a;
+    font-weight: bold;
+    min-width: 120px;
+  }
+  .db:active { transform: translate(2px, 2px); box-shadow: inset 3px 3px 0 rgba(255,255,255,0.2), inset -3px -3px 0 rgba(0,0,0,0.3), 1px 1px 0 #2a2a2a; }
+  .db.erase { background: linear-gradient(180deg, #999 0%, #999 50%, #666 50%, #666 100%); }
+  .db.done  { background: linear-gradient(180deg, #6cc73a 0%, #6cc73a 50%, #4a9c20 50%, #4a9c20 100%); }
+
+  /* === けっか === */
+  .result {
+    max-width: 460px;
+    margin: 60px auto 0;
+    background: rgba(0,0,0,0.7);
+    border: 4px solid #ffeb3b;
+    box-shadow: 6px 6px 0 #2a2a2a, inset 0 0 20px rgba(255,235,59,0.2);
+    padding: 24px 20px;
+  }
+  .r-title {
+    font-size: 36px; color: #ffeb3b;
+    text-shadow: 2px 2px 0 #2a2a2a, -2px -2px 0 #2a2a2a, 2px -2px 0 #2a2a2a, -2px 2px 0 #2a2a2a;
+    margin-bottom: 14px;
+  }
+  .r-stars { font-size: 38px; min-height: 48px; margin-bottom: 10px; }
+  .r-score { font-size: 18px; margin-bottom: 12px; }
+  .r-treasure {
+    margin: 14px 0; padding: 14px;
+    background: rgba(255,235,59,0.15);
+    border: 2px dashed #ffeb3b;
+    display: none;
+  }
+  .r-treasure.show { display: block; animation: tin 0.7s; }
+  .r-treasure .icon { font-size: 56px; display: block; filter: drop-shadow(3px 3px 0 #000); }
+  .r-treasure .name { font-size: 18px; margin-top: 4px; }
+  @keyframes tin { 0% { transform: scale(0); } 70% { transform: scale(1.25); } 100% { transform: scale(1); } }
+  .r-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+  .pbtn {
+    font-size: 16px; padding: 10px 18px;
+    border: 3px solid #2a2a2a;
+    background: linear-gradient(180deg, #5b9bd5 0%, #5b9bd5 50%, #3a73a8 50%, #3a73a8 100%);
+    color: #fff;
+    box-shadow: 3px 3px 0 #2a2a2a;
+    text-shadow: 2px 2px 0 #000;
+  }
+  .pbtn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #2a2a2a; }
+  .pbtn.gold { background: linear-gradient(180deg, #ffd700 0%, #ffd700 50%, #b8860b 50%, #b8860b 100%); color: #2a2a2a; text-shadow: 1px 1px 0 #fff; }
+
+  /* === モーダル === */
+  .modal {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px;
+  }
+  .modal.show { display: flex; }
+  .modal-box {
+    background: #c9b18a;
+    border: 4px solid #2a2a2a;
+    box-shadow: 6px 6px 0 #2a2a2a;
+    padding: 20px; text-align: center;
+    color: #2a2a2a;
+    max-width: 360px; width: 100%;
+  }
+  .m-title { font-size: 22px; color: #c00; margin-bottom: 10px; text-shadow: 2px 2px 0 #fff; }
+  .m-text { font-size: 14px; line-height: 1.5; margin-bottom: 18px; }
+  .m-text b { background: #2a2a2a; color: #ffeb3b; padding: 2px 6px; }
+  .m-text .warn { color: #c00; font-weight: bold; }
+  .m-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .mbtn {
+    font-size: 16px; padding: 10px 18px;
+    border: 3px solid #2a2a2a;
+    color: #fff; box-shadow: 3px 3px 0 #2a2a2a;
+    text-shadow: 2px 2px 0 #000;
+  }
+  .mbtn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #2a2a2a; }
+  .mbtn.safe { background: linear-gradient(180deg, #5fa83e 0%, #5fa83e 50%, #3a7028 50%, #3a7028 100%); }
+  .mbtn.danger { background: linear-gradient(180deg, #d44 0%, #d44 50%, #922 50%, #922 100%); }
+
+  .particles { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 1500; overflow: hidden; }
+  .p { position: absolute; font-size: 26px; animation: fall linear forwards; }
+  @keyframes fall {
+    0% { transform: translateY(-30px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(105vh) rotate(720deg); opacity: 0.5; }
+  }
+</style>
+</head>
+<body>
+
+<div id="jsWarn" style="position:fixed;top:0;left:0;right:0;background:#ffeb3b;color:#2a2a2a;padding:10px;text-align:center;z-index:9999;font-weight:bold;font-size:14px;line-height:1.5;border-bottom:3px solid #2a2a2a;">
+  ⚠ ゲームを あそぶには <u>Safari で ひらいて</u> ください。
+</div>
+<noscript>
+  <div style="position:fixed;top:0;left:0;right:0;background:#d44;color:#fff;padding:20px;text-align:center;z-index:9999;font-weight:bold;">JavaScript が ゆうこうに なっていません。</div>
+</noscript>
+
+<!-- ====== タイトル ====== -->
+<div class="screen active" id="titleScreen">
+  <div class="bg bg-sky"></div>
+  <div class="container">
+    <h1 class="title">おかいもの クラフト</h1>
+    <p class="subtitle">おかねを かぞえて おみせで かいものしよう！</p>
+    <div class="slots" id="saveSlots"></div>
+    <div class="stages" id="stageGrid"></div>
+    <div><div class="treasures" id="treasureBar"></div></div>
+  </div>
+</div>
+
+<!-- ====== プレイ ====== -->
+<div class="screen" id="playScreen">
+  <div class="bg" id="playBg"></div>
+  <button class="back-btn" id="backBtn">◀ もどる</button>
+  <div class="container">
+    <h2 class="stage-head" id="stageHead"></h2>
+    <div class="topbar">
+      <div>もんだい <b id="count">1</b> / 10</div>
+      <div>てんすう <b id="score">0</b></div>
+    </div>
+
+    <div class="shop">
+      <div class="item">
+        <div class="pic" id="itemPic">🍎</div>
+        <div class="info">
+          <div class="name" id="itemName">りんご</div>
+          <div class="price"><span id="itemPrice">50</span><small>えん</small></div>
+        </div>
+      </div>
+      <div class="task" id="task">ぴったり <b>50えん</b> はらおう！</div>
+    </div>
+
+    <div class="wallet">
+      <div class="head" id="walletHead">あなたが はらう おかね</div>
+      <div class="paid-list" id="paidList"></div>
+      <div class="total">
+        ごうけい: <b id="totalAmount">0</b>えん
+        <span class="target" id="targetHint"></span>
+      </div>
+    </div>
+
+    <div class="money-pad" id="moneyPad"></div>
+
+    <div class="message" id="message">おかねを えらんで タップしてね</div>
+
+    <div class="actions">
+      <button class="db erase" id="eraseBtn">もどす</button>
+      <button class="db done" id="doneBtn">これで OK！</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== けっか ====== -->
+<div class="screen" id="resultScreen">
+  <div class="bg" id="resultBg"></div>
+  <div class="container">
+    <div class="result">
+      <div class="r-title" id="rTitle">クリア！</div>
+      <div class="r-stars" id="rStars"></div>
+      <div class="r-score" id="rScore"></div>
+      <div class="r-treasure" id="rTreasure">
+        <span class="icon" id="tIcon"></span>
+        <div class="name" id="tName"></div>
+      </div>
+      <div class="r-buttons">
+        <button class="pbtn" id="toTitleBtn">タイトルへ</button>
+        <button class="pbtn gold" id="retryBtn">もういちど</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== モーダル ====== -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="m-title" id="mTitle">ちゅうい！</div>
+    <div class="m-text" id="mText"></div>
+    <div class="m-buttons">
+      <button class="mbtn safe" id="mCancel">やめる</button>
+      <button class="mbtn danger" id="mOk">けす</button>
+    </div>
+  </div>
+</div>
+
+<div class="particles" id="particles"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ====== しょうひん ======
+  var ITEMS = [
+    {e:'🍎',n:'りんご'},{e:'🍌',n:'ばなな'},{e:'🍓',n:'いちご'},
+    {e:'🍊',n:'みかん'},{e:'🍇',n:'ぶどう'},{e:'🍑',n:'もも'},
+    {e:'🍞',n:'ぱん'},{e:'🍩',n:'どーなつ'},{e:'🍪',n:'くっきー'},
+    {e:'🍰',n:'けーき'},{e:'🍦',n:'あいす'},{e:'🍫',n:'ちょこ'},
+    {e:'🍭',n:'きゃんでぃ'},{e:'🍬',n:'あめ'},
+    {e:'🥛',n:'ぎゅうにゅう'},{e:'🧃',n:'じゅーす'},
+    {e:'✏️',n:'えんぴつ'},{e:'📒',n:'のーと'},{e:'🎨',n:'おりがみ'},
+    {e:'🎈',n:'ふうせん'},{e:'⚽',n:'ぼーる'},
+    {e:'🧸',n:'ぬいぐるみ'},{e:'📚',n:'えほん'},{e:'🚗',n:'ミニカー'}
+  ];
+
+  // ====== ステージ ======
+  // mode: 'pay' = ぴったり はらう / 'change' = おつりを つくる
+  var STAGES = {
+    grass: { id:'grass', name:'そうげん', sub:'ぴったり はらおう', bg:'bg-grass', stageCls:'s-grass',
+             mode:'pay', minPrice: 3, maxPrice: 30, denoms:[1,5,10],
+             treasure:{ icon:'💚', name:'エメラルド' } },
+    river: { id:'river', name:'かわら', sub:'おかねを かぞえよう', bg:'bg-river', stageCls:'s-river',
+             mode:'pay', minPrice: 10, maxPrice: 100, step: 5, denoms:[1,5,10,50,100],
+             treasure:{ icon:'💎', name:'ダイヤモンド' } },
+    city:  { id:'city', name:'まち', sub:'おつりを つくろう', bg:'bg-city', stageCls:'s-city',
+             mode:'change', minPrice: 5, maxPrice: 95, step: 5, paid: 100, denoms:[1,5,10,50,100],
+             treasure:{ icon:'🟡', name:'きんかい' } },
+    sea:   { id:'sea', name:'うみのなか', sub:'おさつで おかいもの', bg:'bg-sea', stageCls:'s-sea',
+             mode:'change', minPrice: 100, maxPrice: 950, step: 10, paid: 1000, denoms:[10,50,100,500,1000],
+             treasure:{ icon:'🌟', name:'ネザースター' }, secret:true }
+  };
+  var ORDER = ['grass','river','city','sea'];
+
+  // ====== セーブ ======
+  var SAVE_KEY = 'okaimono_craft_v1';
+  function safeGet(k) { try { return localStorage.getItem(k); } catch(e) { return null; } }
+  function safeSet(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
+  function loadAll() {
+    var raw = safeGet(SAVE_KEY);
+    if (raw) {
+      try {
+        var d = JSON.parse(raw);
+        if (d && d.slots && d.slots.length === 3) {
+          if (typeof d.active !== 'number') d.active = 0;
+          return d;
+        }
+      } catch(e) {}
+    }
+    return { active: 0, slots: [null, null, null] };
+  }
+  function saveAll() { safeSet(SAVE_KEY, JSON.stringify(allData)); }
+  var allData = loadAll();
+  function curSlot() {
+    if (!allData.slots[allData.active]) allData.slots[allData.active] = {};
+    return allData.slots[allData.active];
+  }
+  function slotEmpty(i) {
+    var s = allData.slots[i];
+    if (!s) return true;
+    for (var k in s) if (s[k]) return false;
+    return true;
+  }
+
+  // ====== じょうたい ======
+  var currentStage = null;
+  var qCount = 0, score = 0, correctCount = 0;
+  var current = null, locked = false;
+  var paidCoins = [];
+
+  function $(id) { return document.getElementById(id); }
+  function show(id) {
+    var scr = document.getElementsByClassName('screen');
+    for (var i = 0; i < scr.length; i++) scr[i].classList.remove('active');
+    $(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  function rand(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+  function pick(a) { return a[rand(0, a.length - 1)]; }
+
+  // ====== タイトル ======
+  function renderTitle() {
+    renderSaveSlots();
+    renderStages();
+    renderTreasureBar();
+  }
+  function renderSaveSlots() {
+    var box = $('saveSlots');
+    box.innerHTML = '';
+    for (var i = 0; i < 3; i++) {
+      var data = allData.slots[i];
+      var isEmpty = slotEmpty(i);
+      var isActive = (allData.active === i);
+      var icons = '';
+      if (!isEmpty) {
+        for (var k = 0; k < ORDER.length; k++) {
+          var sid = ORDER[k];
+          if (data && data[sid]) icons += STAGES[sid].treasure.icon;
+        }
+        if (!icons) icons = '<span style="font-size:13px;color:#aaa">あたらしい ぼうけん</span>';
+      }
+      var div = document.createElement('div');
+      div.className = 'slot' + (isActive ? ' active' : '') + (isEmpty ? '' : ' has-data');
+      div.innerHTML =
+        '<div class="slot-name">スロット ' + (i + 1) + '</div>' +
+        (isEmpty ? '<div class="slot-empty">からっぽ</div>' : '<div class="slot-icons">' + icons + '</div>') +
+        '<button class="del" type="button">×</button>';
+      (function(idx, el) {
+        el.addEventListener('click', function(e) {
+          if (e.target.classList.contains('del')) return;
+          switchSlot(idx);
+        });
+        el.querySelector('.del').addEventListener('click', function(e) {
+          e.stopPropagation();
+          askDelete(idx);
+        });
+      })(i, div);
+      box.appendChild(div);
+    }
+  }
+  function renderStages() {
+    var grid = $('stageGrid');
+    grid.innerHTML = '';
+    var data = curSlot();
+    var list = ['grass','river','city'];
+    if (data.grass && data.river && data.city) list.push('sea');
+    for (var i = 0; i < list.length; i++) {
+      (function(id){
+        var s = STAGES[id];
+        var got = data[id];
+        var card = document.createElement('div');
+        card.className = 'stage ' + s.stageCls;
+        card.innerHTML =
+          (got ? '<div class="got">' + s.treasure.icon + '</div>' : '') +
+          '<div class="name">' + s.name + '<span class="sub">' + s.sub + '</span></div>';
+        card.addEventListener('click', function() { startStage(id); });
+        grid.appendChild(card);
+      })(list[i]);
+    }
+  }
+  function renderTreasureBar() {
+    var box = $('treasureBar');
+    var data = curSlot();
+    var html = '<span class="label">おたから:</span>';
+    for (var i = 0; i < ORDER.length; i++) {
+      var id = ORDER[i];
+      var got = data[id];
+      html += '<span class="t' + (got ? ' got' : '') + '">' + (got ? STAGES[id].treasure.icon : '?') + '</span>';
+    }
+    box.innerHTML = html;
+  }
+  function switchSlot(i) {
+    if (allData.active === i) return;
+    allData.active = i;
+    saveAll();
+    renderTitle();
+  }
+  function askDelete(i) {
+    var s = allData.slots[i];
+    var count = 0;
+    if (s) for (var j = 0; j < ORDER.length; j++) if (s[ORDER[j]]) count++;
+    showModal({
+      title: 'ほんとうに けす？',
+      text: '<b>スロット ' + (i + 1) + '</b> の セーブデータを<br>けしますか？<br>おたから ' + count + ' こ<br><span class="warn">けすと もどせません！</span>',
+      onOk: function() { allData.slots[i] = null; saveAll(); renderTitle(); }
+    });
+  }
+  function showModal(opt) {
+    $('mTitle').textContent = opt.title || 'ちゅうい！';
+    $('mText').innerHTML = opt.text || '';
+    $('mOk').onclick = function() { hideModal(); if (opt.onOk) opt.onOk(); };
+    $('mCancel').onclick = function() { hideModal(); if (opt.onCancel) opt.onCancel(); };
+    $('modal').classList.add('show');
+  }
+  function hideModal() { $('modal').classList.remove('show'); }
+
+  // ====== ステージ かいし ======
+  function startStage(id) {
+    currentStage = STAGES[id];
+    qCount = 0; score = 0; correctCount = 0; locked = false;
+    $('playBg').className = 'bg ' + currentStage.bg;
+    $('stageHead').textContent = currentStage.name + ' （' + currentStage.sub + '）';
+    renderMoneyPad();
+    show('playScreen');
+    nextProblem();
+  }
+
+  // ====== もんだい ======
+  function makeProblem() {
+    var s = currentStage;
+    var step = s.step || 1;
+    var price;
+    do {
+      price = rand(Math.ceil(s.minPrice/step), Math.floor(s.maxPrice/step)) * step;
+    } while (price < s.minPrice || price > s.maxPrice);
+    var item = pick(ITEMS);
+    if (s.mode === 'pay') {
+      return { mode:'pay', item:item, price:price, target:price };
+    } else {
+      var change = s.paid - price;
+      return { mode:'change', item:item, price:price, paid:s.paid, target:change };
+    }
+  }
+
+  function drawProblem(p) {
+    $('itemPic').textContent = p.item.e;
+    $('itemName').textContent = p.item.n;
+    $('itemPrice').textContent = p.price;
+    if (p.mode === 'pay') {
+      $('task').innerHTML = 'ぴったり <b>' + p.price + 'えん</b> はらおう！';
+      $('walletHead').textContent = 'あなたが はらう おかね';
+      $('targetHint').innerHTML = '（めざせ <b>' + p.price + 'えん</b>）';
+    } else {
+      $('task').innerHTML = '<b>' + p.paid + 'えん</b> ではらった！おつりは いくら？';
+      $('walletHead').textContent = 'おつりに わたす おかね';
+      $('targetHint').innerHTML = '（おつり: <b>' + p.target + 'えん</b>）';
+    }
+  }
+
+  // ====== マネーパッド ======
+  function renderMoneyPad() {
+    var pad = $('moneyPad');
+    pad.innerHTML = '';
+    var ds = currentStage.denoms;
+    for (var i = 0; i < ds.length; i++) {
+      (function(v){
+        var el = makeMoneyEl(v);
+        el.addEventListener('click', function(){ addMoney(v); });
+        pad.appendChild(el);
+      })(ds[i]);
+    }
+  }
+
+  function makeMoneyEl(v) {
+    var el = document.createElement('button');
+    el.type = 'button';
+    if (v === 1000) {
+      el.className = 'bill';
+      el.innerHTML = '<span class="v">1000</span><span class="e">えん</span>';
+    } else {
+      el.className = 'coin c' + v;
+      el.innerHTML = '<span class="v">' + v + '</span><span class="e">えん</span>';
+    }
+    return el;
+  }
+
+  function addMoney(v) {
+    if (locked) return;
+    paidCoins.push(v);
+    renderPaid();
+    updateTotal();
+  }
+  function removeLastMoney() {
+    if (locked) return;
+    paidCoins.pop();
+    renderPaid();
+    updateTotal();
+  }
+  function clearMoney() {
+    paidCoins = [];
+    renderPaid();
+    updateTotal();
+  }
+  function renderPaid() {
+    var box = $('paidList');
+    box.innerHTML = '';
+    // ねうちの たかいじゅんに ならべると わかりやすい
+    var sorted = paidCoins.slice().sort(function(a,b){ return b - a; });
+    for (var i = 0; i < sorted.length; i++) {
+      box.appendChild(makeMoneyEl(sorted[i]));
+    }
+  }
+  function getTotal() {
+    var t = 0;
+    for (var i = 0; i < paidCoins.length; i++) t += paidCoins[i];
+    return t;
+  }
+  function updateTotal() {
+    $('totalAmount').textContent = getTotal();
+  }
+
+  // ====== けっか はんてい ======
+  function checkAnswer() {
+    if (locked) return;
+    var total = getTotal();
+    var target = current.target;
+    if (total === target) {
+      locked = true;
+      score += 10;
+      correctCount++;
+      $('score').textContent = score;
+      var msgs = ['せいかい！','おみごと！','ぴったり！','すごい！','まいどあり！'];
+      $('message').textContent = msgs[rand(0, msgs.length - 1)];
+      $('message').className = 'message ok';
+      burst(10, ['✨','⭐','💰','💴']);
+      beep(880, 0.1);
+      setTimeout(nextProblem, 1100);
+    } else if (total < target) {
+      $('message').textContent = 'もうすこし たそう（' + (target - total) + 'えん たりない）';
+      $('message').className = 'message ng';
+      beep(300, 0.15);
+    } else {
+      $('message').textContent = 'おおすぎる！「もどす」で へらそう（' + (total - target) + 'えん おおい）';
+      $('message').className = 'message ng';
+      beep(300, 0.15);
+    }
+  }
+
+  function nextProblem() {
+    qCount++;
+    if (qCount > 10) { showResult(); return; }
+    $('count').textContent = qCount;
+    locked = false;
+    current = makeProblem();
+    clearMoney();
+    drawProblem(current);
+    $('message').textContent = 'おかねを えらんで タップしてね';
+    $('message').className = 'message';
+  }
+
+  // ====== けっか ======
+  function showResult() {
+    $('resultBg').className = 'bg ' + currentStage.bg;
+    var stars = '';
+    if (correctCount === 10) stars = '⭐⭐⭐';
+    else if (correctCount >= 7) stars = '⭐⭐';
+    else if (correctCount >= 4) stars = '⭐';
+    else stars = '💪';
+    $('rStars').textContent = stars;
+    $('rScore').textContent = correctCount + ' / 10 もん せいかい！';
+    var t = $('rTreasure');
+    t.classList.remove('show');
+    if (correctCount === 10) {
+      $('rTitle').textContent = 'パーフェクト！';
+      var data = curSlot();
+      var wasNew = !data[currentStage.id];
+      data[currentStage.id] = true;
+      saveAll();
+      t.classList.add('show');
+      $('tIcon').textContent = currentStage.treasure.icon;
+      if (currentStage.id === 'sea' && wasNew) {
+        $('tName').innerHTML = 'でんせつの <b style="color:#ffeb3b">' + currentStage.treasure.name + '</b> を てに いれた！<br>ぼうけんは クリア！';
+      } else if (wasNew) {
+        $('tName').innerHTML = '<b style="color:#ffeb3b">' + currentStage.treasure.name + '</b> を てに いれた！';
+      } else {
+        $('tName').innerHTML = currentStage.treasure.name + ' をまた みつけた！';
+      }
+      burst(60, ['🎉','✨','⭐','💎','🌟','💚','🟡','💰','💴']);
+    } else {
+      $('rTitle').textContent = 'おつかれさま！';
+      if (correctCount >= 7) burst(20, ['✨','⭐']);
+    }
+    show('resultScreen');
+  }
+
+  // ====== パーティクル ======
+  function burst(n, list) {
+    var box = $('particles');
+    for (var i = 0; i < n; i++) {
+      var p = document.createElement('div');
+      p.className = 'p';
+      p.textContent = list[rand(0, list.length - 1)];
+      p.style.left = rand(0, 100) + 'vw';
+      p.style.top = '-30px';
+      p.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+      box.appendChild(p);
+      (function(el){ setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 3500); })(p);
+    }
+  }
+
+  // ====== おと ======
+  var audioCtx = null;
+  function beep(freq, dur) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+      o.type = 'square';
+      o.frequency.value = freq;
+      g.gain.value = 0.08;
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.stop(audioCtx.currentTime + dur);
+    } catch(e) {}
+  }
+
+  // ====== ボタン ======
+  $('eraseBtn').addEventListener('click', removeLastMoney);
+  $('doneBtn').addEventListener('click', checkAnswer);
+  $('backBtn').addEventListener('click', function(){ renderTitle(); show('titleScreen'); });
+  $('toTitleBtn').addEventListener('click', function(){ renderTitle(); show('titleScreen'); });
+  $('retryBtn').addEventListener('click', function(){ if (currentStage) startStage(currentStage.id); });
+
+  // ====== スタート ======
+  var warn = $('jsWarn');
+  if (warn) warn.style.display = 'none';
+  window.addEventListener('error', function(e){
+    console.error('[おかいものクラフト]', e.error || e.message);
+  });
+  try { renderTitle(); }
+  catch(err) {
+    console.error('renderTitle:', err);
+    try { allData = { active: 0, slots: [null, null, null] }; renderTitle(); }
+    catch(err2) {}
+  }
+})();
+</script>
+</body>
+</html>
