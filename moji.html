@@ -10,7 +10,6 @@
 <meta name="theme-color" content="#5fa83e">
 <meta name="format-detection" content="telephone=no">
 <title>もじ クラフト</title>
-<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5.0/dist/hanzi-writer.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; width: 100%; overflow: hidden; overscroll-behavior: none; }
@@ -624,51 +623,110 @@
     } catch(e) {}
   }
 
-  // ====== かきじゅん（hanzi-writer）======
-  var currentWriter = null;
+  // ====== かきじゅん（KanjiVG SVG）======
+  var loadedSvg = null;
+  var svgCache = {}; // SVG ようの きゃっしゅ
+
+  function fetchKvg(ch) {
+    if (svgCache[ch]) return Promise.resolve(svgCache[ch]);
+    var code = ch.codePointAt(0);
+    var hex = code.toString(16);
+    while (hex.length < 5) hex = '0' + hex;
+    var url = 'https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg@master/kanji/' + hex + '.svg';
+    return fetch(url).then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    }).then(function(t) {
+      svgCache[ch] = t;
+      return t;
+    });
+  }
+
   function showStrokeOrder(ch) {
     var container = $('strokeContainer');
-    container.innerHTML = '';
-    currentWriter = null;
+    container.innerHTML = '<div class="stroke-fallback" style="font-size:36px;color:#aaa">…</div>';
+    loadedSvg = null;
 
-    if (typeof HanziWriter === 'undefined') {
-      container.innerHTML = '<div class="stroke-fallback">' + ch + '</div>';
-      return;
-    }
+    fetchKvg(ch).then(function(svgText) {
+      var parser = new DOMParser();
+      var doc = parser.parseFromString(svgText, 'image/svg+xml');
+      var svg = doc.querySelector('svg');
+      if (!svg) throw new Error('no svg');
 
-    try {
-      currentWriter = HanziWriter.create(container, ch, {
-        width: 156,
-        height: 156,
-        padding: 6,
-        strokeAnimationSpeed: 1.0,
-        delayBetweenStrokes: 350,
-        showOutline: true,
-        showCharacter: false,
-        strokeColor: '#1a3a8a',
-        outlineColor: '#bbb',
-        radicalColor: null,
-        onLoadCharDataError: function() {
-          container.innerHTML = '<div class="stroke-fallback">' + ch + '</div>';
-          currentWriter = null;
-        },
-        onLoadCharDataSuccess: function() {
-          try { currentWriter.animateCharacter(); } catch(e) {}
-        }
-      });
-    } catch(e) {
+      // サイズちょうせい
+      svg.removeAttribute('width');
+      svg.removeAttribute('height');
+      svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      svg.style.width = '100%';
+      svg.style.height = '100%';
+      svg.style.display = 'block';
+
+      // ふるい こを けして いれかえ
+      container.innerHTML = '';
+      container.appendChild(svg);
+      loadedSvg = svg;
+
+      animatePaths(svg);
+    }).catch(function(e) {
       container.innerHTML = '<div class="stroke-fallback">' + ch + '</div>';
-      currentWriter = null;
-    }
+      loadedSvg = null;
+    });
   }
-  function replayStrokeOrder() {
-    if (currentWriter) {
+
+  function animatePaths(svg) {
+    // ストロークの ぱす
+    var paths = svg.querySelectorAll('path');
+    if (paths.length === 0) return;
+
+    // ぜんぶ かくしてからじゅんばんに あらわす
+    for (var i = 0; i < paths.length; i++) {
+      var p = paths[i];
+      p.style.transition = 'none';
+      p.style.fill = 'none';
+      p.style.stroke = '#1a3a8a';
+      p.style.strokeWidth = '4';
+      p.style.strokeLinecap = 'round';
+      p.style.strokeLinejoin = 'round';
       try {
-        currentWriter.animateCharacter();
-        return;
+        var length = p.getTotalLength();
+        if (length > 0) {
+          p.style.strokeDasharray = length;
+          p.style.strokeDashoffset = length;
+        }
       } catch(e) {}
     }
-    showStrokeOrder(currentChar);
+
+    // すうじラベル（1, 2, 3 ...）の スタイル
+    var labels = svg.querySelectorAll('text');
+    for (var j = 0; j < labels.length; j++) {
+      labels[j].style.fill = '#d44';
+      labels[j].style.fontWeight = 'bold';
+      labels[j].style.fontSize = '8px';
+    }
+
+    // りふろー（スタイルを てきよう）
+    void svg.getBoundingClientRect();
+
+    // じゅんばんに アニメーション
+    var delay = 200;
+    var dur = 700;
+    for (var k = 0; k < paths.length; k++) {
+      (function(path, d) {
+        setTimeout(function() {
+          path.style.transition = 'stroke-dashoffset ' + dur + 'ms linear';
+          path.style.strokeDashoffset = '0';
+        }, d);
+      })(paths[k], delay);
+      delay += dur + 300;
+    }
+  }
+
+  function replayStrokeOrder() {
+    if (loadedSvg) {
+      animatePaths(loadedSvg);
+    } else {
+      showStrokeOrder(currentChar);
+    }
   }
 
   // ====== ステージ かいし ======
